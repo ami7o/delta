@@ -105,10 +105,13 @@ object UniversalFormat extends DeltaLogging {
   /**
    * Expected to be called after the newest metadata and protocol have been ~ finalized.
    *
+   * @param operation option of DeltaOperation used for txn.commit. This is None if the check
+   *                  is performed from CreateDeltaTableCommand before the commit.
    * @return tuple of options of (updatedProtocol, updatedMetadata). For either action, if no
    *         updates need to be applied, will return None.
    */
   def enforceInvariantsAndDependencies(
+      spark: SparkSession,
       snapshot: Snapshot,
       newestProtocol: Protocol,
       newestMetadata: Metadata,
@@ -238,12 +241,14 @@ object UniversalFormat extends DeltaLogging {
    *         otherwise the original configuration.
    */
   def enforceDependenciesInConfiguration(
+      spark: SparkSession,
       configuration: Map[String, String],
       snapshot: Snapshot): Map[String, String] = {
     var metadata = snapshot.metadata.copy(configuration = configuration)
 
     // Check UniversalFormat related property dependencies
     val (_, universalMetadata) = UniversalFormat.enforceInvariantsAndDependencies(
+      spark,
       snapshot,
       newestProtocol = snapshot.protocol,
       newestMetadata = metadata,

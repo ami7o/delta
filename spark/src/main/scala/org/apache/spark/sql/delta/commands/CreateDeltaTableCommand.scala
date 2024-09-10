@@ -311,7 +311,7 @@ case class CreateDeltaTableCommand(
       (taggedCommitData, op)
     }
     val updatedConfiguration = UniversalFormat
-      .enforceDependenciesInConfiguration(deltaWriter.configuration, txn.snapshot)
+      .enforceDependenciesInConfiguration(sparkSession, deltaWriter.configuration, txn.snapshot)
     val updatedWriter = deltaWriter.withNewWriterConfiguration(updatedConfiguration)
     // We are either appending/overwriting with saveAsTable or creating a new table with CTAS
     if (!hasBeenExecuted(txn, sparkSession, Some(options))) {
@@ -373,7 +373,7 @@ case class CreateDeltaTableCommand(
           getProvidedMetadata(tableWithLocation, table.schema.json)
         newMetadata = newMetadata.copy(configuration =
           UniversalFormat.enforceDependenciesInConfiguration(
-            newMetadata.configuration, txn.snapshot))
+            sparkSession, newMetadata.configuration, txn.snapshot))
 
         txn.updateMetadataForNewTable(newMetadata)
         protocol.foreach { protocol =>
